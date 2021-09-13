@@ -1,0 +1,100 @@
+<html>
+<head>
+<style>
+#clockdiv {
+  font-family: sans-serif;
+  color: #fff;
+  display: block;
+  width: 100%;
+  height: auto;
+  font-weight: 100;
+  text-align: center;
+  font-size: 32px;
+  text-align: center;
+  background-color: #485675; /*#3898ff;*/
+  font-family: sans-serif;
+  font-weight: 100;
+}
+#clockdiv > div {
+  padding: 10px;
+  border-radius: 3px;
+  background: #018B45; /*#3a7bc2;*/
+  display: inline-block;
+  width: 100px;
+  height: 100px;
+  margin: 15px;
+}
+#clockdiv > div::before {
+  content: attr(value);
+  padding: 15px;
+  border-radius: 3px;
+  background-color: #3CB44A; /*#25578d;*/
+  display: inline-block;
+}
+#clockdiv > div::after {
+  content: attr(id);
+  position: relative;
+  display: block;
+  clear: both;
+  text-align: center;
+  line-height: 25px;
+  vertical-align: middle;
+  font-size: 18px;
+}
+</style>
+</head>
+<body>
+<h1>Styled clock, minimalistic</h1>
+<div id="clockdiv" data-deadline="Sep 30 2021 17:30:00 GMT-0800"></div>
+<p>Countdown to Trais returning to TAMS full-time</p>
+<script type="text/javascript" href="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript">
+$.fn.countdown = function () {
+  return $(this).each(function () {
+    var $this = $(this);
+
+    $this[0]["deadline"] = Date.parse($this.attr("data-deadline"));
+    $this[0]["timeRemaining"] = (function () {
+      var targetTime = this["deadline"];
+      var nowTime = new Date();
+      var t = targetTime - nowTime;
+      var seconds = Math.floor((t / 1000) % 60);
+      var minutes = Math.floor((t / 1000 / 60) % 60);
+      var hours = Math.floor((t / (1000 * 60 * 60)) % 24);
+      var days = Math.floor(t / (1000 * 60 * 60 * 24));
+
+      return { 'total': t, 'days': days, 'hours': hours, 'minutes': minutes, 'seconds': seconds };
+    }).bind($this[0]);
+
+
+    // get spans where our clock numbers are held
+    var divs = ["Days", "Hours", "Minutes", "Seconds"];
+    for (var len = divs.length, n = 0; n < len; n++) {
+      if ($this.find("#" + divs[n]).length <= 0) {
+        $this.append("<div id=\"" + divs[n] + "\"></div>");
+      }
+    }
+
+    $this[0]["update"] = (function () {
+      var t = this["timeRemaining"]();
+
+      // update the numbers in each part of the clock
+      $this.find("#Days").attr("value", t.days);
+      $this.find("#Hours").attr("value", ("0" + t.hours).slice(-2));
+      $this.find("#Minutes").attr("value", ("0" + t.minutes).slice(-2));
+      $this.find("#Seconds").attr("value", ("0" + t.seconds).slice(-2));
+
+      if (t.total <= 0) { clearInterval(this["interval"]); }
+    }).bind($this[0]);
+
+    $this[0]["interval"] = setInterval($this[0]["update"], 1000);
+
+    return $this;
+  });
+}
+$(document).ready(function () {
+  $("#clockdiv").countdown();
+});
+</script>
+</body>
+</html>
